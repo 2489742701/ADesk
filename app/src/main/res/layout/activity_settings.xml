@@ -419,6 +419,24 @@
             android:text="@string/show_favorites_only"
             android:textColor="#FFFFFF" />
 
+        <LinearLayout
+            android:id="@+id/showOtherAppsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="24dp"
+            android:visibility="gone">
+
+            <Switch
+                android:id="@+id/showOtherAppsSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="@string/show_other_apps_after_favorites"
+                android:textColor="#AAAAAA"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnManageFavorites"
             android:layout_width="match_parent"

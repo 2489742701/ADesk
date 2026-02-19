@@ -33,11 +33,19 @@ class SearchAppAdapter(
             getFirstLetter(app.label)
         }.toSortedMap(compareBy { it })
         
+        var hasZSection = false
         groupedApps.forEach { (letter, appList) ->
             items.add(ListItem.Header(letter))
             appList.sortedBy { it.label.lowercase() }.forEach { app ->
                 items.add(ListItem.AppItem(app))
             }
+            if (letter == "Z") {
+                hasZSection = true
+            }
+        }
+        
+        if (hasZSection) {
+            items.add(ListItem.Header(context.getString(R.string.thanksplay_easter_egg)))
         }
         
         notifyDataSetChanged()

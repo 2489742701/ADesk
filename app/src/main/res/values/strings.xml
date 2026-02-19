@@ -18,6 +18,9 @@
     
     <string name="favorites_settings">收藏设置</string>
     <string name="show_favorites_only">仅显示收藏应用</string>
+    <string name="show_other_apps_after_favorites">收藏应用后显示其他应用</string>
+    <string name="other_apps">其他应用</string>
+    <string name="thanksplay_easter_egg">-thanksplay-</string>
     <string name="manage_favorites">管理收藏</string>
     <string name="customize_order">自定义顺序</string>
     <string name="set_as_default_launcher">设为默认桌面</string>
@@ -105,6 +108,8 @@
     <string name="weather_settings">天气设置</string>
     <string name="show_weather">显示天气</string>
     <string name="weather_city">城市</string>
-    <string name="weather_city_hint">输入城市名称</string>
+    <string name="weather_city_hint">输入城市名称（留空自动定位）</string>
     <string name="weather_load_failed">加载失败</string>
+    <string name="weather_loading">加载中...</string>
+    <string name="weather_location_failed">无法获取位置</string>
 </resources>

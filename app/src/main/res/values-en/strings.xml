@@ -19,6 +19,9 @@
     
     <string name="favorites_settings">Favorites Settings</string>
     <string name="show_favorites_only">Show favorites only</string>
+    <string name="show_other_apps_after_favorites">Show other apps after favorites</string>
+    <string name="other_apps">Other Apps</string>
+    <string name="thanksplay_easter_egg">-thanksplay-</string>
     <string name="manage_favorites">Manage Favorites</string>
     <string name="customize_order">Custom Order</string>
     <string name="set_as_default_launcher">Set as Default Launcher</string>
@@ -106,6 +109,8 @@
     <string name="weather_settings">Weather Settings</string>
     <string name="show_weather">Show Weather</string>
     <string name="weather_city">City</string>
-    <string name="weather_city_hint">Enter city name</string>
+    <string name="weather_city_hint">Enter city name (leave empty for auto location)</string>
     <string name="weather_load_failed">Load failed</string>
+    <string name="weather_loading">Loading...</string>
+    <string name="weather_location_failed">Cannot get location</string>
 </resources>

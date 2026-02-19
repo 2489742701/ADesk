@@ -2,6 +2,10 @@ package com.thanksplay.adesk.util
 
 import android.content.Context
 import android.location.Geocoder
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
 import com.thanksplay.adesk.model.WeatherData
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -75,6 +79,53 @@ object WeatherService {
                 }
             }
         }.start()
+    }
+    
+    fun getCurrentLocation(context: Context, callback: (Double?, Double?) -> Unit) {
+        try {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            
+            val locationListener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    locationManager.removeUpdates(this)
+                    callback(location.latitude, location.longitude)
+                }
+                
+                @Deprecated("Deprecated in Java")
+                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+                override fun onProviderEnabled(provider: String) {}
+                override fun onProviderDisabled(provider: String) {
+                    locationManager.removeUpdates(this)
+                    callback(null, null)
+                }
+            }
+            
+            val hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            val hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            
+            when {
+                hasNetwork -> {
+                    @Suppress("DEPRECATION")
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, locationListener)
+                }
+                hasGps -> {
+                    @Suppress("DEPRECATION")
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+                }
+                else -> {
+                    callback(null, null)
+                }
+            }
+            
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                locationManager.removeUpdates(locationListener)
+            }, 10000)
+            
+        } catch (e: SecurityException) {
+            callback(null, null)
+        } catch (e: Exception) {
+            callback(null, null)
+        }
     }
     
     private fun getLocationName(context: Context, lat: Double, lon: Double): String {

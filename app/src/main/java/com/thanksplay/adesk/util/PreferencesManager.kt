@@ -51,6 +51,13 @@ class PreferencesManager(context: Context) {
             invalidateCache()
         }
     
+    var showOtherAppsAfterFavorites: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_OTHER_APPS_AFTER_FAVORITES, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_SHOW_OTHER_APPS_AFTER_FAVORITES, value).apply()
+            invalidateCache()
+        }
+    
     var searchColumns: Int
         get() = prefs.getInt(KEY_SEARCH_COLUMNS, DEFAULT_SEARCH_COLUMNS)
         set(value) = prefs.edit().putInt(KEY_SEARCH_COLUMNS, value).apply()
@@ -171,6 +178,7 @@ class PreferencesManager(context: Context) {
         private const val KEY_HIDDEN_APPS = "hidden_apps"
         private const val KEY_CUSTOM_ORDER = "custom_order"
         private const val KEY_SHOW_FAVORITES_ONLY = "show_favorites_only"
+        private const val KEY_SHOW_OTHER_APPS_AFTER_FAVORITES = "show_other_apps_after_favorites"
         private const val KEY_SEARCH_COLUMNS = "search_columns"
         private const val KEY_HOME_APPS = "home_apps"
         private const val KEY_HOME_COLUMNS = "home_columns"

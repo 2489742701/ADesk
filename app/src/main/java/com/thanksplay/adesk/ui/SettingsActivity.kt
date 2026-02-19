@@ -55,6 +55,8 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
     private lateinit var sortInstallTime: RadioButton
     private lateinit var sortCustom: RadioButton
     private lateinit var showFavoritesSwitch: Switch
+    private lateinit var showOtherAppsLayout: LinearLayout
+    private lateinit var showOtherAppsSwitch: Switch
     private lateinit var btnManageFavorites: Button
     private lateinit var btnCustomOrder: Button
     private lateinit var btnManageHidden: Button
@@ -116,6 +118,8 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         sortInstallTime = findViewById(R.id.sortInstallTime)
         sortCustom = findViewById(R.id.sortCustom)
         showFavoritesSwitch = findViewById(R.id.showFavoritesSwitch)
+        showOtherAppsLayout = findViewById(R.id.showOtherAppsLayout)
+        showOtherAppsSwitch = findViewById(R.id.showOtherAppsSwitch)
         btnManageFavorites = findViewById(R.id.btnManageFavorites)
         btnCustomOrder = findViewById(R.id.btnCustomOrder)
         btnManageHidden = findViewById(R.id.btnManageHidden)
@@ -195,6 +199,16 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         }
         
         showFavoritesSwitch.isChecked = prefsManager.showFavoritesOnly
+        showOtherAppsSwitch.isChecked = prefsManager.showOtherAppsAfterFavorites
+        updateShowOtherAppsVisibility()
+    }
+    
+    private fun updateShowOtherAppsVisibility() {
+        showOtherAppsLayout.visibility = if (prefsManager.showFavoritesOnly) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
     }
     
     private fun updateWallpaperOptionsVisibility() {
@@ -292,6 +306,11 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         
         showFavoritesSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefsManager.showFavoritesOnly = isChecked
+            updateShowOtherAppsVisibility()
+        }
+        
+        showOtherAppsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefsManager.showOtherAppsAfterFavorites = isChecked
         }
         
         btnManageHomeApps.setOnClickListener {

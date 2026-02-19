@@ -290,6 +290,10 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         val tvDesc = container.findViewById<TextView>(R.id.tvWeatherDesc)
         val tvLocation = container.findViewById<TextView>(R.id.tvWeatherLocation)
         
+        tvTemp.text = "--°"
+        tvDesc.text = getString(R.string.weather_loading)
+        tvLocation.text = "--"
+        
         val city = prefsManager.weatherCity
         if (city.isNotEmpty()) {
             com.thanksplay.adesk.util.WeatherService.fetchWeatherByCity(this, city) { data ->
@@ -302,6 +306,28 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
                     tvDesc.text = getString(R.string.weather_load_failed)
                     tvLocation.text = city
                 }
+            }
+        } else {
+            if (checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                com.thanksplay.adesk.util.WeatherService.getCurrentLocation(this) { lat, lon ->
+                    if (lat != null && lon != null) {
+                        com.thanksplay.adesk.util.WeatherService.fetchWeather(this, lat, lon) { data ->
+                            if (data != null) {
+                                tvTemp.text = "${data.temperature.toInt()}°"
+                                tvDesc.text = data.description
+                                tvLocation.text = data.location
+                            } else {
+                                tvTemp.text = "--°"
+                                tvDesc.text = getString(R.string.weather_load_failed)
+                                tvLocation.text = "--"
+                            }
+                        }
+                    } else {
+                        tvDesc.text = getString(R.string.weather_location_failed)
+                    }
+                }
+            } else {
+                requestPermissions(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION), 1002)
             }
         }
     }
@@ -537,27 +563,51 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
     
     private fun updateLayoutManager() {
         val columns = prefsManager.columnsPerPage
-        appsRecyclerView.layoutManager = GridLayoutManager(this, columns)
+        val gridLayoutManager = GridLayoutManager(this, columns)
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return appsAdapter.getSpanSize(position)
+            }
+        }
+        appsRecyclerView.layoutManager = gridLayoutManager
     }
     
     private fun updateDisplayedApps() {
         val sortMethod = prefsManager.sortMethod
         val customOrder = prefsManager.customOrder
+        val columns = prefsManager.columnsPerPage
+        appsAdapter.setColumns(columns)
         
-        val appsToShow = if (prefsManager.showFavoritesOnly) {
-            getVisibleApps().filter { prefsManager.isFavorite(it.packageName) }
+        if (prefsManager.showFavoritesOnly && prefsManager.showOtherAppsAfterFavorites) {
+            val visibleApps = getVisibleApps()
+            val favoriteApps = visibleApps.filter { prefsManager.isFavorite(it.packageName) }
+            val otherApps = visibleApps.filter { !prefsManager.isFavorite(it.packageName) }
+            
+            val sortedFavorites = appLoader.sortApps(favoriteApps, sortMethod, customOrder)
+            val sortedOthers = appLoader.sortApps(otherApps, sortMethod, customOrder)
+            
+            val finalFavorites = sortedFavorites.toMutableList()
+            finalFavorites.add(createSettingsApp())
+            
+            updateLayoutManager()
+            appsAdapter.setLabelPosition(prefsManager.labelPosition)
+            appsAdapter.setItemsWithSeparator(finalFavorites, sortedOthers, getString(R.string.other_apps))
         } else {
-            getVisibleApps()
+            val appsToShow = if (prefsManager.showFavoritesOnly) {
+                getVisibleApps().filter { prefsManager.isFavorite(it.packageName) }
+            } else {
+                getVisibleApps()
+            }
+            
+            displayedApps = appLoader.sortApps(appsToShow, sortMethod, customOrder)
+            
+            val finalList = displayedApps.toMutableList()
+            finalList.add(createSettingsApp())
+            
+            updateLayoutManager()
+            appsAdapter.setLabelPosition(prefsManager.labelPosition)
+            appsAdapter.setApps(finalList)
         }
-        
-        displayedApps = appLoader.sortApps(appsToShow, sortMethod, customOrder)
-        
-        val finalList = displayedApps.toMutableList()
-        finalList.add(createSettingsApp())
-        
-        updateLayoutManager()
-        appsAdapter.setLabelPosition(prefsManager.labelPosition)
-        appsAdapter.setApps(finalList)
     }
     
     private fun createSettingsApp(): AppInfo {
