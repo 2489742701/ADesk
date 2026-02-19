@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical"
+    android:background="#1A1A1A"
+    android:layout_marginBottom="1dp">
+
+    <ImageView
+        android:id="@+id/dragHandle"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        android:contentDescription="@string/drag_to_reorder"
+        android:padding="4dp" />
+
+    <ImageView
+        android:id="@+id/appIcon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/app_icon_desc" />
+
+    <TextView
+        android:id="@+id/appLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <ImageButton
+        android:id="@+id/btnMoveToTop"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@android:drawable/ic_menu_upload"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/move_to_top"
+        android:scaleType="centerInside"
+        android:padding="8dp" />
+
+    <ImageButton
+        android:id="@+id/btnHide"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/hide_app"
+        android:scaleType="centerInside"
+        android:padding="8dp" />
+
+</LinearLayout>

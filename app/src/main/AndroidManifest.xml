@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".ADeskApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ADesk"
+        tools:targetApi="31">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings"
+            android:theme="@style/Theme.ADesk" />
+
+        <activity
+            android:name=".ui.CustomOrderActivity"
+            android:exported="false"
+            android:label="@string/customize_order"
+            android:theme="@style/Theme.ADesk" />
+
+        <activity
+            android:name=".ui.FavoritesActivity"
+            android:exported="false"
+            android:label="@string/manage_favorites"
+            android:theme="@style/Theme.ADesk" />
+
+        <activity
+            android:name=".ui.HiddenAppsActivity"
+            android:exported="false"
+            android:label="@string/hidden_apps"
+            android:theme="@style/Theme.ADesk" />
+
+        <activity
+            android:name=".ui.HomeAppsActivity"
+            android:exported="false"
+            android:label="@string/manage_home_apps"
+            android:theme="@style/Theme.ADesk" />
+
+        <activity
+            android:name=".ui.PluginsActivity"
+            android:exported="false"
+            android:label="@string/plugin_manager"
+            android:theme="@style/Theme.ADesk" />
+
+    </application>
+
+</manifest>

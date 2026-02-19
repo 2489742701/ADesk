@@ -1,0 +1,110 @@
+<resources>
+    <string name="app_name">ADesk</string>
+    <string name="settings">设置</string>
+    <string name="search_hint">搜索应用...</string>
+    <string name="app_icon_desc">应用图标</string>
+    <string name="all_apps">所有应用</string>
+    
+    <string name="display_settings">显示设置</string>
+    <string name="apps_per_row">每行显示应用数</string>
+    <string name="label_position">应用名称位置</string>
+    <string name="right">右侧</string>
+    <string name="bottom">下方</string>
+    
+    <string name="sort_settings">排序设置</string>
+    <string name="sort_abc">按字母排序 (A-Z)</string>
+    <string name="sort_install_time">按安装时间排序</string>
+    <string name="sort_custom">自定义排序</string>
+    
+    <string name="favorites_settings">收藏设置</string>
+    <string name="show_favorites_only">仅显示收藏应用</string>
+    <string name="manage_favorites">管理收藏</string>
+    <string name="customize_order">自定义顺序</string>
+    <string name="set_as_default_launcher">设为默认桌面</string>
+    <string name="refresh_cache">刷新应用缓存</string>
+    <string name="cache_refreshed">缓存已刷新</string>
+    <string name="manage_hidden_apps">管理隐藏应用</string>
+    
+    <string name="add_to_favorites">添加到收藏</string>
+    <string name="remove_from_favorites">从收藏移除</string>
+    <string name="app_info">应用信息</string>
+    <string name="added_to_favorites">已添加到收藏</string>
+    <string name="removed_from_favorites">已从收藏移除</string>
+    
+    <string name="drag_to_reorder">拖动以重新排序</string>
+    <string name="drag_handle_desc">拖动手柄</string>
+    <string name="order_saved">顺序已保存</string>
+    
+    <string name="search_app">搜索应用</string>
+    <string name="search_results">搜索结果</string>
+    <string name="current_order">当前顺序</string>
+    <string name="my_favorites">我的收藏</string>
+    <string name="save">保存</string>
+    <string name="move_to_top">移至顶层</string>
+    <string name="move_up">上移</string>
+    <string name="move_down">下移</string>
+    <string name="hide_app">隐藏</string>
+    <string name="app_hidden">应用已隐藏</string>
+    <string name="hidden_apps">隐藏的应用</string>
+    <string name="no_hidden_apps">没有隐藏的应用</string>
+    <string name="app_shown">应用已显示</string>
+    
+    <string name="home_page_settings">主页设置</string>
+    <string name="home_page_layout">主页排版</string>
+    <string name="manage_home_apps">管理主页应用</string>
+    <string name="no_events">今日无日程</string>
+    <string name="calendar_event_format">📅 %s</string>
+    
+    <string name="clock_position">时钟位置</string>
+    <string name="center">居中</string>
+    <string name="top">顶部</string>
+    <string name="hidden">不显示</string>
+    <string name="wallpaper">壁纸</string>
+    <string name="wallpaper_type">壁纸类型</string>
+    <string name="black">黑色</string>
+    <string name="system_wallpaper">系统壁纸</string>
+    <string name="custom_color">自定义颜色</string>
+    <string name="custom_image">自定义图片</string>
+    <string name="select_image">选择图片</string>
+    <string name="wallpaper_set">壁纸已设置</string>
+    <string name="pick_color">选择颜色</string>
+    <string name="blur_effect">毛玻璃效果</string>
+    <string name="effects">特效</string>
+    <string name="particle_effect">滑动粒子效果</string>
+    <string name="app_list_settings">应用列表设置</string>
+    <string name="columns_per_page">每页列数</string>
+    <string name="sort_method">排序方式</string>
+    <string name="alphabetical">按字母</string>
+    <string name="install_time">安装时间</string>
+    <string name="select_color">选择颜色</string>
+    <string name="language_settings">语言设置</string>
+    <string name="select_language">选择语言</string>
+    <string name="restart_to_apply">重启应用以应用更改</string>
+    <string name="color_black">黑色</string>
+    <string name="color_dark_gray">深灰</string>
+    <string name="color_gray">灰色</string>
+    <string name="color_dark_blue">深蓝</string>
+    <string name="color_dark_green">深绿</string>
+    <string name="color_dark_purple">深紫</string>
+    <string name="color_dark_red">深红</string>
+    <string name="color_orange">橙色</string>
+    <string name="show_home_app_labels">显示应用名称</string>
+    <string name="home_apps_offset">应用垂直偏移</string>
+    
+    <string name="plugin_manager">插件管理</string>
+    <string name="plugin_hint">插件可以扩展ADesk的功能。安装支持ADesk的插件后点击扫描即可发现。</string>
+    <string name="no_plugins_found">未发现插件</string>
+    <string name="scan_plugins">扫描插件</string>
+    <string name="plugin_icon">插件图标</string>
+    <string name="enable">启用</string>
+    <string name="disable">禁用</string>
+    <string name="plugin_enabled">%s 已启用</string>
+    <string name="plugin_disabled">%s 已禁用</string>
+    <string name="plugin_no_settings">该插件没有设置页面</string>
+    
+    <string name="weather_settings">天气设置</string>
+    <string name="show_weather">显示天气</string>
+    <string name="weather_city">城市</string>
+    <string name="weather_city_hint">输入城市名称</string>
+    <string name="weather_load_failed">加载失败</string>
+</resources>

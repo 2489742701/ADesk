@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical"
+    android:background="#1A1A1A">
+
+    <ImageView
+        android:id="@+id/appIcon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/appLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <ImageButton
+        android:id="@+id/btnMoveToTop"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@android:drawable/arrow_up_float"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/move_to_top"
+        android:scaleType="centerInside" />
+
+    <ImageButton
+        android:id="@+id/btnHide"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/hide_app"
+        android:layout_marginStart="4dp"
+        android:scaleType="centerInside" />
+
+</LinearLayout>
