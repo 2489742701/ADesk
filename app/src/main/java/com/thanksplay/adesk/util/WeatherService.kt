@@ -18,8 +18,19 @@ object WeatherService {
     
     private const val DEFAULT_BASE_URL = "https://api.open-meteo.com/v1/forecast"
     
-    fun fetchWeather(context: Context, lat: Double, lon: Double, callback: (WeatherData?) -> Unit) {
+    fun fetchWeather(context: Context, lat: Double, lon: Double, callback: (WeatherData?) -> Unit, forceRefresh: Boolean = false) {
         val prefsManager = PreferencesManager(context)
+        
+        if (!forceRefresh && prefsManager.isWeatherCacheValid()) {
+            val cachedData = parseCachedWeather(prefsManager.weatherCacheData)
+            if (cachedData != null) {
+                android.os.Handler(context.mainLooper).post {
+                    callback(cachedData)
+                }
+                return
+            }
+        }
+        
         val customApiUrl = prefsManager.weatherApiUrl
         val baseUrl = if (customApiUrl.isNotEmpty()) customApiUrl else DEFAULT_BASE_URL
         
@@ -49,11 +60,23 @@ object WeatherService {
                 
                 val data = WeatherData(temperature, description, location)
                 
+                prefsManager.weatherCacheTime = System.currentTimeMillis()
+                prefsManager.weatherCacheData = "$temperature|$weatherCode|$location"
+                
                 android.os.Handler(context.mainLooper).post {
                     callback(data)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                if (!forceRefresh) {
+                    val cachedData = parseCachedWeather(prefsManager.weatherCacheData)
+                    if (cachedData != null) {
+                        android.os.Handler(context.mainLooper).post {
+                            callback(cachedData)
+                        }
+                        return@Thread
+                    }
+                }
                 android.os.Handler(context.mainLooper).post {
                     callback(null)
                 }
@@ -61,7 +84,36 @@ object WeatherService {
         }.start()
     }
     
-    fun fetchWeatherByCity(context: Context, city: String, callback: (WeatherData?) -> Unit) {
+    private fun parseCachedWeather(cacheData: String): WeatherData? {
+        if (cacheData.isEmpty()) return null
+        return try {
+            val parts = cacheData.split("|")
+            if (parts.size == 3) {
+                val temperature = parts[0].toDouble()
+                val weatherCode = parts[1].toInt()
+                val location = parts[2]
+                WeatherData(temperature, getWeatherDescription(weatherCode), location)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    fun fetchWeatherByCity(context: Context, city: String, callback: (WeatherData?) -> Unit, forceRefresh: Boolean = false) {
+        val prefsManager = PreferencesManager(context)
+        
+        if (!forceRefresh && prefsManager.isWeatherCacheValid()) {
+            val cachedData = parseCachedWeather(prefsManager.weatherCacheData)
+            if (cachedData != null) {
+                android.os.Handler(context.mainLooper).post {
+                    callback(cachedData)
+                }
+                return
+            }
+        }
+        
         Thread {
             try {
                 val geocoder = Geocoder(context, Locale.getDefault())
@@ -70,7 +122,7 @@ object WeatherService {
                 
                 if (addresses != null && addresses.isNotEmpty()) {
                     val address = addresses[0]
-                    fetchWeather(context, address.latitude, address.longitude, callback)
+                    fetchWeather(context, address.latitude, address.longitude, callback, forceRefresh)
                 } else {
                     android.os.Handler(context.mainLooper).post {
                         callback(null)

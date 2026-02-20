@@ -112,6 +112,8 @@
     <string name="weather_city_hint">Enter city name (leave empty for auto location)</string>
     <string name="weather_api_url">Weather API URL</string>
     <string name="weather_api_url_hint">Leave empty to use default API</string>
+    <string name="weather_update_interval">Weather Update Interval</string>
+    <string name="weather_update_interval_hint">Frequent updates may increase battery usage</string>
     <string name="weather_load_failed">Load failed</string>
     <string name="weather_loading">Loading...</string>
     <string name="weather_location_failed">Cannot get location</string>

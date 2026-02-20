@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -65,9 +66,12 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
     private lateinit var btnPluginManager: Button
     private lateinit var btnAboutAuthor: Button
     private lateinit var weatherApiUrlInput: EditText
+    private lateinit var weatherUpdateIntervalSpinner: Spinner
     
     private val columnOptions = arrayOf("1", "2", "4", "6")
     private val homeLayoutOptions = arrayOf("4x2", "6x2", "6x3", "1x4", "1x6")
+    private val intervalOptions = arrayOf("15分钟", "30分钟", "1小时", "2小时", "4小时", "6小时", "12小时", "24小时")
+    private val intervalValues = arrayOf(15, 30, 60, 120, 240, 360, 720, 1440)
     
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
@@ -103,6 +107,7 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         showWeatherSwitch = findViewById(R.id.showWeatherSwitch)
         weatherCityInput = findViewById(R.id.weatherCityInput)
         weatherApiUrlInput = findViewById(R.id.weatherApiUrlInput)
+        weatherUpdateIntervalSpinner = findViewById(R.id.weatherUpdateIntervalSpinner)
         wallpaperTypeGroup = findViewById(R.id.wallpaperTypeGroup)
         wallpaperBlack = findViewById(R.id.wallpaperBlack)
         wallpaperColor = findViewById(R.id.wallpaperColor)
@@ -138,6 +143,10 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         val homeLayoutAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, homeLayoutOptions)
         homeLayoutAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         homeLayoutSpinner.adapter = homeLayoutAdapter
+        
+        val intervalAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, intervalOptions)
+        intervalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        weatherUpdateIntervalSpinner.adapter = intervalAdapter
     }
     
     private fun loadSettings() {
@@ -180,6 +189,14 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         showWeatherSwitch.isChecked = prefsManager.showWeather
         weatherCityInput.setText(prefsManager.weatherCity)
         weatherApiUrlInput.setText(prefsManager.weatherApiUrl)
+        
+        val currentInterval = prefsManager.weatherUpdateInterval
+        val intervalIndex = intervalValues.indexOf(currentInterval)
+        if (intervalIndex >= 0) {
+            weatherUpdateIntervalSpinner.setSelection(intervalIndex)
+        } else {
+            weatherUpdateIntervalSpinner.setSelection(3)
+        }
         
         when (prefsManager.wallpaperType) {
             PreferencesManager.WALLPAPER_BLACK -> wallpaperBlack.isChecked = true
@@ -347,6 +364,13 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
             if (!hasFocus) {
                 prefsManager.weatherApiUrl = weatherApiUrlInput.text.toString()
             }
+        }
+        
+        weatherUpdateIntervalSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                prefsManager.weatherUpdateInterval = intervalValues[position]
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
         
         btnManageFavorites.setOnClickListener {

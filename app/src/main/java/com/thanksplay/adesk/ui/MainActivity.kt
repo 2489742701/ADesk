@@ -301,11 +301,21 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
     private fun loadWidget(container: android.widget.FrameLayout) {
         if (prefsManager.showWeather) {
             container.visibility = View.VISIBLE
-            loadWeather(container)
+            loadWeather(container, false)
+            
+            container.setOnClickListener {
+                val currentTime = System.currentTimeMillis()
+                if (this::lastWeatherClickTime.isInitialized && currentTime - lastWeatherClickTime < 500) {
+                    loadWeather(container, true)
+                }
+                lastWeatherClickTime = currentTime
+            }
         }
     }
     
-    private fun loadWeather(container: android.widget.FrameLayout) {
+    private lateinit var lastWeatherClickTime: Long
+    
+    private fun loadWeather(container: android.widget.FrameLayout, forceRefresh: Boolean) {
         val tvTemp = container.findViewById<TextView>(R.id.tvWeatherTemp)
         val tvDesc = container.findViewById<TextView>(R.id.tvWeatherDesc)
         val tvLocation = container.findViewById<TextView>(R.id.tvWeatherLocation)
@@ -316,7 +326,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         
         val city = prefsManager.weatherCity
         if (city.isNotEmpty()) {
-            com.thanksplay.adesk.util.WeatherService.fetchWeatherByCity(this, city) { data ->
+            com.thanksplay.adesk.util.WeatherService.fetchWeatherByCity(this, city, { data ->
                 if (data != null) {
                     tvTemp.text = "${data.temperature.toInt()}°"
                     tvDesc.text = data.description
@@ -326,12 +336,12 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
                     tvDesc.text = getString(R.string.weather_load_failed)
                     tvLocation.text = city
                 }
-            }
+            }, forceRefresh)
         } else {
             if (checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 com.thanksplay.adesk.util.WeatherService.getCurrentLocation(this) { lat, lon ->
                     if (lat != null && lon != null) {
-                        com.thanksplay.adesk.util.WeatherService.fetchWeather(this, lat, lon) { data ->
+                        com.thanksplay.adesk.util.WeatherService.fetchWeather(this, lat, lon, { data ->
                             if (data != null) {
                                 tvTemp.text = "${data.temperature.toInt()}°"
                                 tvDesc.text = data.description
@@ -341,7 +351,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
                                 tvDesc.text = getString(R.string.weather_load_failed)
                                 tvLocation.text = "--"
                             }
-                        }
+                        }, forceRefresh)
                     } else {
                         tvDesc.text = getString(R.string.weather_location_failed)
                     }

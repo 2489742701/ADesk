@@ -129,6 +129,31 @@ class PreferencesManager(context: Context) {
         get() = prefs.getString(KEY_WEATHER_API_URL, "") ?: ""
         set(value) = prefs.edit().putString(KEY_WEATHER_API_URL, value).apply()
     
+    var weatherCacheTime: Long
+        get() = prefs.getLong(KEY_WEATHER_CACHE_TIME, 0)
+        set(value) = prefs.edit().putLong(KEY_WEATHER_CACHE_TIME, value).apply()
+    
+    var weatherCacheData: String
+        get() = prefs.getString(KEY_WEATHER_CACHE_DATA, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_WEATHER_CACHE_DATA, value).apply()
+    
+    var weatherUpdateInterval: Int
+        get() = prefs.getInt(KEY_WEATHER_UPDATE_INTERVAL, 120)
+        set(value) = prefs.edit().putInt(KEY_WEATHER_UPDATE_INTERVAL, value).apply()
+    
+    fun isWeatherCacheValid(): Boolean {
+        if (weatherCacheTime == 0L || weatherCacheData.isEmpty()) return false
+        val elapsed = System.currentTimeMillis() - weatherCacheTime
+        return elapsed < (weatherUpdateInterval * 60 * 1000L)
+    }
+    
+    fun clearWeatherCache() {
+        prefs.edit()
+            .remove(KEY_WEATHER_CACHE_TIME)
+            .remove(KEY_WEATHER_CACHE_DATA)
+            .apply()
+    }
+    
     var cacheInvalidated: Boolean
         get() = prefs.getBoolean(KEY_CACHE_INVALIDATED, false)
         set(value) = prefs.edit().putBoolean(KEY_CACHE_INVALIDATED, value).apply()
@@ -200,6 +225,9 @@ class PreferencesManager(context: Context) {
         private const val KEY_SHOW_WEATHER = "show_weather"
         private const val KEY_WEATHER_CITY = "weather_city"
         private const val KEY_WEATHER_API_URL = "weather_api_url"
+        private const val KEY_WEATHER_CACHE_TIME = "weather_cache_time"
+        private const val KEY_WEATHER_CACHE_DATA = "weather_cache_data"
+        private const val KEY_WEATHER_UPDATE_INTERVAL = "weather_update_interval"
         private const val KEY_CACHE_INVALIDATED = "cache_invalidated"
         
         const val DEFAULT_COLUMNS = 2
