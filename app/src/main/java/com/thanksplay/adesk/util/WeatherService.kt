@@ -134,11 +134,46 @@ object WeatherService {
             @Suppress("DEPRECATION")
             val addresses = geocoder.getFromLocation(lat, lon, 1)
             if (addresses != null && addresses.isNotEmpty()) {
-                addresses[0].locality ?: addresses[0].adminArea ?: "Unknown"
+                val address = addresses[0]
+                address.locality ?: address.subAdminArea ?: address.adminArea ?: getLocationNameFromNetwork(lat, lon)
             } else {
-                "Unknown"
+                getLocationNameFromNetwork(lat, lon)
             }
         } catch (e: Exception) {
+            getLocationNameFromNetwork(lat, lon)
+        }
+    }
+    
+    private fun getLocationNameFromNetwork(lat: Double, lon: Double): String {
+        return try {
+            val url = URL("https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon&zoom=10&accept-language=zh")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            connection.setRequestProperty("User-Agent", "ADesk/1.0")
+            
+            val response = StringBuilder()
+            val reader = BufferedReader(InputStreamReader(connection.inputStream))
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                response.append(line)
+            }
+            reader.close()
+            
+            val json = JSONObject(response.toString())
+            val address = json.optJSONObject("address")
+            when {
+                address != null -> {
+                    address.optString("city", 
+                        address.optString("town", 
+                            address.optString("county", 
+                                address.optString("state", "Unknown"))))
+                }
+                else -> "Unknown"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
             "Unknown"
         }
     }
