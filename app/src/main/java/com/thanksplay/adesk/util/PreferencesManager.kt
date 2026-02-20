@@ -125,6 +125,10 @@ class PreferencesManager(context: Context) {
         get() = prefs.getString(KEY_WEATHER_CITY, "") ?: ""
         set(value) = prefs.edit().putString(KEY_WEATHER_CITY, value).apply()
     
+    var weatherApiUrl: String
+        get() = prefs.getString(KEY_WEATHER_API_URL, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_WEATHER_API_URL, value).apply()
+    
     var cacheInvalidated: Boolean
         get() = prefs.getBoolean(KEY_CACHE_INVALIDATED, false)
         set(value) = prefs.edit().putBoolean(KEY_CACHE_INVALIDATED, value).apply()
@@ -195,6 +199,7 @@ class PreferencesManager(context: Context) {
         private const val KEY_HOME_APPS_OFFSET = "home_apps_offset"
         private const val KEY_SHOW_WEATHER = "show_weather"
         private const val KEY_WEATHER_CITY = "weather_city"
+        private const val KEY_WEATHER_API_URL = "weather_api_url"
         private const val KEY_CACHE_INVALIDATED = "cache_invalidated"
         
         const val DEFAULT_COLUMNS = 2

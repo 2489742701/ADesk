@@ -16,12 +16,16 @@ import java.util.Locale
 
 object WeatherService {
     
-    private const val BASE_URL = "https://api.open-meteo.com/v1/forecast"
+    private const val DEFAULT_BASE_URL = "https://api.open-meteo.com/v1/forecast"
     
     fun fetchWeather(context: Context, lat: Double, lon: Double, callback: (WeatherData?) -> Unit) {
+        val prefsManager = PreferencesManager(context)
+        val customApiUrl = prefsManager.weatherApiUrl
+        val baseUrl = if (customApiUrl.isNotEmpty()) customApiUrl else DEFAULT_BASE_URL
+        
         Thread {
             try {
-                val url = URL("$BASE_URL?latitude=$lat&longitude=$lon&current_weather=true&timezone=auto")
+                val url = URL("$baseUrl?latitude=$lat&longitude=$lon&current_weather=true&timezone=auto")
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.connectTimeout = 5000

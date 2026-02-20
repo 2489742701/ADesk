@@ -63,6 +63,8 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
     private lateinit var btnSetAsDefault: Button
     private lateinit var btnRefreshCache: Button
     private lateinit var btnPluginManager: Button
+    private lateinit var btnAboutAuthor: Button
+    private lateinit var weatherApiUrlInput: EditText
     
     private val columnOptions = arrayOf("1", "2", "4", "6")
     private val homeLayoutOptions = arrayOf("4x2", "6x2", "6x3", "1x4", "1x6")
@@ -100,6 +102,7 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         homeAppsOffsetInput = findViewById(R.id.homeAppsOffsetInput)
         showWeatherSwitch = findViewById(R.id.showWeatherSwitch)
         weatherCityInput = findViewById(R.id.weatherCityInput)
+        weatherApiUrlInput = findViewById(R.id.weatherApiUrlInput)
         wallpaperTypeGroup = findViewById(R.id.wallpaperTypeGroup)
         wallpaperBlack = findViewById(R.id.wallpaperBlack)
         wallpaperColor = findViewById(R.id.wallpaperColor)
@@ -126,6 +129,7 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         btnSetAsDefault = findViewById(R.id.btnSetAsDefault)
         btnRefreshCache = findViewById(R.id.btnRefreshCache)
         btnPluginManager = findViewById(R.id.btnPluginManager)
+        btnAboutAuthor = findViewById(R.id.btnAboutAuthor)
         
         val columnAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, columnOptions)
         columnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -175,6 +179,7 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         
         showWeatherSwitch.isChecked = prefsManager.showWeather
         weatherCityInput.setText(prefsManager.weatherCity)
+        weatherApiUrlInput.setText(prefsManager.weatherApiUrl)
         
         when (prefsManager.wallpaperType) {
             PreferencesManager.WALLPAPER_BLACK -> wallpaperBlack.isChecked = true
@@ -338,6 +343,12 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
             }
         }
         
+        weatherApiUrlInput.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                prefsManager.weatherApiUrl = weatherApiUrlInput.text.toString()
+            }
+        }
+        
         btnManageFavorites.setOnClickListener {
             startActivity(Intent(this, FavoritesActivity::class.java))
         }
@@ -362,6 +373,10 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         
         btnPluginManager.setOnClickListener {
             startActivity(Intent(this, PluginsActivity::class.java))
+        }
+        
+        btnAboutAuthor.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
         }
     }
     

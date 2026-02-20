@@ -72,6 +72,12 @@
             android:label="@string/plugin_manager"
             android:theme="@style/Theme.ADesk" />
 
+        <activity
+            android:name=".ui.AboutActivity"
+            android:exported="false"
+            android:label="@string/about_author"
+            android:theme="@style/Theme.ADesk" />
+
     </application>
 
 </manifest>
