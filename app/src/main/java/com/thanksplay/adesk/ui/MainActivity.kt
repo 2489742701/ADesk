@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
             
             container.setOnClickListener {
                 val currentTime = System.currentTimeMillis()
-                if (this::lastWeatherClickTime.isInitialized && currentTime - lastWeatherClickTime < 500) {
+                if (lastWeatherClickTime > 0 && currentTime - lastWeatherClickTime < 500) {
                     loadWeather(container, true)
                 }
                 lastWeatherClickTime = currentTime
@@ -320,9 +320,21 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         val tvDesc = container.findViewById<TextView>(R.id.tvWeatherDesc)
         val tvLocation = container.findViewById<TextView>(R.id.tvWeatherLocation)
         
-        tvTemp.text = "--°"
-        tvDesc.text = getString(R.string.weather_loading)
-        tvLocation.text = "--"
+        if (!forceRefresh && prefsManager.isWeatherCacheValid()) {
+            val cachedData = com.thanksplay.adesk.util.WeatherService.parseCachedWeather(prefsManager.weatherCacheData)
+            if (cachedData != null) {
+                tvTemp.text = "${cachedData.temperature.toInt()}°"
+                tvDesc.text = cachedData.description
+                tvLocation.text = cachedData.location
+                return
+            }
+        }
+        
+        if (forceRefresh) {
+            tvTemp.text = "--°"
+            tvDesc.text = getString(R.string.weather_loading)
+            tvLocation.text = "--"
+        }
         
         val city = prefsManager.weatherCity
         if (city.isNotEmpty()) {

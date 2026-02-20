@@ -552,9 +552,16 @@
             android:background="#333333" />
 
         <Button
+            android:id="@+id/btnRestartLauncher"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/restart_launcher" />
+
+        <Button
             android:id="@+id/btnAboutAuthor"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:layout_marginTop="8dp"
             android:text="@string/about_author" />
 
     </LinearLayout>

@@ -84,7 +84,7 @@ object WeatherService {
         }.start()
     }
     
-    private fun parseCachedWeather(cacheData: String): WeatherData? {
+    fun parseCachedWeather(cacheData: String): WeatherData? {
         if (cacheData.isEmpty()) return null
         return try {
             val parts = cacheData.split("|")

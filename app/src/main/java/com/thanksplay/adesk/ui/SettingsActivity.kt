@@ -65,6 +65,7 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
     private lateinit var btnRefreshCache: Button
     private lateinit var btnPluginManager: Button
     private lateinit var btnAboutAuthor: Button
+    private lateinit var btnRestartLauncher: Button
     private lateinit var weatherApiUrlInput: EditText
     private lateinit var weatherUpdateIntervalSpinner: Spinner
     
@@ -135,6 +136,7 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         btnRefreshCache = findViewById(R.id.btnRefreshCache)
         btnPluginManager = findViewById(R.id.btnPluginManager)
         btnAboutAuthor = findViewById(R.id.btnAboutAuthor)
+        btnRestartLauncher = findViewById(R.id.btnRestartLauncher)
         
         val columnAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, columnOptions)
         columnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -401,6 +403,15 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         
         btnAboutAuthor.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
+        }
+        
+        btnRestartLauncher.setOnClickListener {
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.addCategory(Intent.CATEGORY_HOME)
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
+            android.os.Process.killProcess(android.os.Process.myPid())
         }
     }
     

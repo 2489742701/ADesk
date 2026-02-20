@@ -119,5 +119,6 @@
     <string name="weather_location_failed">Cannot get location</string>
     
     <string name="about_author">About Author</string>
+    <string name="restart_launcher">Restart Launcher</string>
     <string name="author_name">thanksplay</string>
 </resources>

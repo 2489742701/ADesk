@@ -118,5 +118,6 @@
     <string name="weather_location_failed">无法获取位置</string>
     
     <string name="about_author">关于作者</string>
+    <string name="restart_launcher">重启桌面</string>
     <string name="author_name">thanksplay</string>
 </resources>
