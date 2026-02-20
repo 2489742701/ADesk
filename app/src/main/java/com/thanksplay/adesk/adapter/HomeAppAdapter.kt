@@ -7,20 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.thanksplay.adesk.R
 import com.thanksplay.adesk.model.AppInfo
 import com.thanksplay.adesk.util.PreferencesManager
 
-class HomeAppAdapter(private val context: Context) : RecyclerView.Adapter<HomeAppAdapter.ViewHolder>() {
+class HomeAppAdapter(private val context: Context) : ListAdapter<AppInfo, HomeAppAdapter.ViewHolder>(HomeAppDiffCallback()) {
     
-    private var items: List<AppInfo> = emptyList()
     private val prefsManager = PreferencesManager(context)
-    
-    fun setItems(apps: List<AppInfo>) {
-        this.items = apps
-        notifyDataSetChanged()
-    }
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -29,7 +25,7 @@ class HomeAppAdapter(private val context: Context) : RecyclerView.Adapter<HomeAp
     }
     
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val app = items[position]
+        val app = getItem(position)
         holder.icon.setImageDrawable(app.icon)
         
         if (prefsManager.showHomeAppLabels) {
@@ -43,8 +39,6 @@ class HomeAppAdapter(private val context: Context) : RecyclerView.Adapter<HomeAp
             launchApp(app)
         }
     }
-    
-    override fun getItemCount(): Int = items.size
     
     private fun launchApp(app: AppInfo) {
         try {
@@ -61,5 +55,15 @@ class HomeAppAdapter(private val context: Context) : RecyclerView.Adapter<HomeAp
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val icon: ImageView = itemView.findViewById(R.id.appIcon)
         val label: TextView = itemView.findViewById(R.id.appLabel)
+    }
+}
+
+class HomeAppDiffCallback : DiffUtil.ItemCallback<AppInfo>() {
+    override fun areItemsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
+        return oldItem.packageName == newItem.packageName
+    }
+    
+    override fun areContentsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
+        return oldItem == newItem
     }
 }

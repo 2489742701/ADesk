@@ -106,7 +106,7 @@ class HomeAppsActivity : AppCompatActivity() {
     private fun addToHome(app: AppInfo) {
         val maxApps = prefsManager.homeColumns * prefsManager.homeRows
         if (homeApps.size >= maxApps) {
-            Toast.makeText(this, "主页应用已满", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.home_apps_full, Toast.LENGTH_SHORT).show()
             return
         }
         

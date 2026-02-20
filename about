@@ -1,133 +1,112 @@
-Gemini 说
-This is a comprehensive MainActivity.kt for a custom Android Launcher application. It serves as the central hub, managing the UI, app data, and user interactions.
+既然您已经跑通了功能，下面从代码结构、性能、可维护性等方面提出一些优化建议，供您参考：
 
-Below is a breakdown of the code's functionality, followed by a technical review and specific recommendations for optimization.
+1. 使用协程替代 Thread + Handler
+目前项目中大量使用 Thread 和 Handler 处理异步任务（如天气获取、应用加载）。改用 Kotlin 协程可以让代码更简洁，避免回调地狱，并自动处理生命周期。
 
-📱 Key Features Analysis
-Based on the code provided, your launcher has the following architecture:
+示例改进：
 
-1. Three-Page Navigation (ViewPager2)
-The launcher uses a ViewPager2 to swipe between three distinct interfaces:
-
-Page 0 (Home): Displays the clock, date, upcoming calendar events, and a grid of "Home Apps" (pinned or default).
-
-Page 1 (App Drawer): A full grid of all installed apps.
-
-Page 2 (Search): A dedicated search page with a focusable EditText and real-time filtering.
-
-2. Customization Engine (PreferencesManager)
-The code heavily relies on a preference manager to handle user customization:
-
-Wallpaper: Supports Black, Solid Color, or the System Wallpaper.
-
-Layout: Configurable columns/rows for home and drawer.
-
-Visibility: Hiding specific apps.
-
-Sorting: Custom sorting or standard alphabetical.
-
-3. Utilities & Widgets
-
-Live Clock: Updates every second using a Handler.
-
-Calendar Integration: Queries the CalendarContract to show the next day's events.
-
-Particle Effects: Includes a ParticleView for visual flair.
-
-🔍 Code Review & Optimization Opportunities
-While the code is functional, there are several areas where performance and architecture can be modernized.
-
-1. The onResume Performance Bottleneck
-Issue: You are calling loadApps() inside onResume().
-Impact: Every time the user returns to the home screen (which happens constantly in a launcher), the app re-scans all installed packages, re-sorts them, and re-queries the calendar. This will cause visible UI lag or battery drain.
-Fix: Move data loading to a ViewModel or use a flag to only reload if the package list has actually changed.
-
-2. Architecture: View vs. Fragment
-Issue: You are inflating raw View objects in createPages() and passing them to the adapter.
-Impact: This creates a "God Activity" where MainActivity handles the logic for three different screens.
-Fix: Convert the three pages (Home, Apps, Search) into Fragments. This separates concerns and allows ViewPager2 to manage memory much better.
-
-3. Concurrency (Thread Blocking)
-Issue: appLoader.loadAllApps() appears to run on the Main Thread.
-Impact: If a user has 200+ apps, the UI will freeze while the list loads.
-Fix: Use Kotlin Coroutines to load apps on Dispatchers.IO.
-
-4. Permission Handling
-Issue:
-
-Kotlin
-if (ContextCompat.checkSelfPermission(...) != PackageManager.PERMISSION_GRANTED) { return }
-The code checks for Calendar permissions but doesn't request them if missing. The user will just see an empty event space with no prompt.
-
-🛠️ Recommended Refactoring
-Here is how you can modernize the critical parts of this code using Coroutines and Lifecycle awareness.
-
-Step 1: Optimize the Clock (Replace Handler)
-Using Handler is the "old way." Use lifecycleScope to automatically stop the clock when the app is in the background.
-
-Kotlin
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
-// Inside onCreate
-startClock()
-
-private fun startClock() {
-    lifecycleScope.launch {
-        while (true) {
-            updateTime()
-            delay(1000) // Non-blocking delay
-        }
-    }
+kotlin
+// WeatherService 改为挂起函数
+suspend fun fetchWeather(context: Context, lat: Double, lon: Double, forceRefresh: Boolean): WeatherData? {
+    return withContext(Dispatchers.IO) { ... }
 }
-Step 2: Offload App Loading to Background
-Move the heavy lifting off the main thread to prevent frame drops.
 
-Kotlin
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-
-private fun loadApps() {
-    lifecycleScope.launch {
-        // Switch to IO thread for heavy loading
-        val apps = withContext(Dispatchers.IO) {
-            appLoader.loadAllApps()
-        }
-        
-        allApps = apps
-        
-        // Switch back to Main thread to update UI
-        updateDisplayedApps()
-        loadHomeApps()
-        loadCalendarEvents()
-    }
+// 在 Activity 中调用
+lifecycleScope.launch {
+    val data = WeatherService.fetchWeather(context, lat, lon, forceRefresh)
+    updateUI(data)
 }
-Step 3: Fix onResume Logic
-Only reload if necessary. You can use a boolean flag or a BroadcastReceiver that listens for package installs/removals.
+优点：取消协程可自动停止任务，避免内存泄漏；代码线性化，更易读。
 
-Kotlin
-private var needsReload = true
+2. 引入 ViewModel + LiveData/Flow 分离 UI 和数据
+MainActivity 目前承担了过多的职责（应用加载、天气、事件、UI 更新等）。使用 ViewModel 可以：
 
-override fun onResume() {
-    super.onResume()
-    updateTime()
-    // Only load if explicitly marked (e.g., returning from Settings)
-    if (needsReload) {
-        loadApps()
-        needsReload = false
-    }
+在屏幕旋转时保留数据
+
+将业务逻辑与 UI 分离，便于测试
+
+配合 LiveData 或 Flow 实现响应式 UI
+
+建议：为每个页面（主页、应用页、搜索页）创建对应的 ViewModel，并在 Activity 中观察数据变化。
+
+3. 使用 Repository 模式统一数据源
+目前 AppLoader、WeatherService、AppCacheManager 分散在多个工具类中。引入 Repository 层封装数据获取逻辑（本地缓存、网络、系统 API），上层（ViewModel）只需调用 repository 的方法。
+
+示例结构：
+
+text
+- repository/
+  - AppRepository (从 AppLoader + AppCacheManager 获取数据)
+  - WeatherRepository (从 WeatherService + PreferencesManager 获取数据)
+  - CalendarRepository (从系统日历获取数据)
+4. 优化权限请求（ActivityResultContracts）
+项目中多处手动请求权限并重写 onRequestPermissionsResult。可以使用 AndroidX Activity 的 ActivityResultContracts.RequestPermission 或 RequestMultiplePermissions，减少样板代码。
+
+示例：
+
+kotlin
+val locationPermissionRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+    if (granted) { /* 获取位置 */ }
 }
-🗓️ Date Formatting Note
-I noticed this line:
-private val dateFormat = SimpleDateFormat("yyyy年MM月dd日 EEEE", Locale.CHINA)
+locationPermissionRequest.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+5. 使用 Glide 或 Coil 处理图标缓存
+AppCacheManager 手动将图标存为 PNG 文件，复杂且可能产生性能问题。使用成熟图片库（如 Coil）可以自动内存/磁盘缓存，并简化代码。
 
-This hardcodes the date format to Chinese standards. If you plan to release this internationally, consider using the system's localized format:
+kotlin
+// 直接加载图标到 ImageView
+imageView.load(appInfo.icon) // Coil 支持 Drawable
+移除 AppCacheManager 中的图标序列化逻辑，改为在第一次加载时缓存到内存（如使用 LruCache）。
 
-Kotlin
-// Automatically adapts to user's language and region
-private val dateFormat = SimpleDateFormat.getDateInstance(SimpleDateFormat.FULL, Locale.getDefault())
-Next Step
-Would you like me to refactor the App Loading logic into a ViewModel for you, or would you prefer help implementing the BroadcastReceiver so the launcher automatically updates when a new app is installed?
+6. 改进 RecyclerView 更新方式
+AppAdapter 调用 notifyDataSetChanged() 会导致整个列表刷新，浪费资源。改用 ListAdapter + DiffUtil 实现增量更新，提升滑动性能。
 
+示例：
+
+kotlin
+class AppAdapter : ListAdapter<AppInfo, AppViewHolder>(AppDiffCallback()) {
+    // ...
+}
+7. 统一错误处理和日志
+项目中有很多 e.printStackTrace()，建议封装一个日志工具类，并根据 Build 类型控制输出（Debug 打印，Release 忽略）。同时可统一错误提示（如用 Toast 或 Snackbar）。
+
+8. 依赖版本统一管理
+在 build.gradle 中散落着各种依赖版本，建议使用 buildSrc 或 Gradle Version Catalog 集中管理，方便升级和维护。
+
+9. 使用 DataStore 替代部分 SharedPreferences
+对于复杂配置（如收藏列表、隐藏列表），SharedPreferences 存储 Set<String> 不方便修改。可以考虑使用 Jetpack DataStore（基于 Proto 或 Preferences）来管理，支持异步和类型安全。
+
+10. 插件架构优化
+PluginManager 目前通过反射实例化插件，可以考虑使用 ServiceLoader 或依赖注入框架（如 Dagger Hilt）管理插件生命周期。另外，插件启用状态可存入 DataStore。
+
+11. 优化天气服务的缓存和重试
+WeatherService 已有简单缓存，但重试机制欠缺。可以在网络失败时自动重试（例如使用协程重试），并增加用户友好的错误状态提示。
+
+12. 代码分层与包结构
+建议按功能分包，而不是按类型：
+
+text
+- data          (数据层: model, repository, datasource)
+- domain        (用例层, 可选)
+- presentation  (UI层: ui, adapter, viewmodel)
+- util          (工具类)
+- di            (依赖注入)
+当前包结构较乱（adapter、ui、util 并列），可按此调整。
+
+13. 使用 Dagger Hilt 或手动依赖注入
+目前许多类直接 object 或硬编码实例，不利于单元测试和替换。引入 Hilt 可以轻松管理依赖，例如将 PreferencesManager、AppLoader 注入到 ViewModel 中。
+
+14. 性能监控与优化
+使用 StrictMode 在开发阶段检测主线程 I/O。
+
+对 RecyclerView 启用 setHasFixedSize(true) 提升效率。
+
+避免在 onDraw 中创建对象（ParticleView 已注意，但需确保动画性能）。
+
+15. 完善国际化
+已有 values-en，但有些硬编码字符串（如 "主页应用已满"）未抽取，建议全部移到 strings.xml。
+
+16. 测试覆盖
+可为核心逻辑（如排序、缓存解析）编写单元测试，使用 JUnit + MockK。
+
+以上优化建议可以根据项目进度和需求选择性实施。希望这些对您有所帮助！如果您对某个具体点感兴趣，我可以提供更详细的代码示例。
 

@@ -15,6 +15,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.Switch
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.thanksplay.adesk.ADeskApplication
@@ -71,7 +72,18 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
     
     private val columnOptions = arrayOf("1", "2", "4", "6")
     private val homeLayoutOptions = arrayOf("4x2", "6x2", "6x3", "1x4", "1x6")
-    private val intervalOptions = arrayOf("15分钟", "30分钟", "1小时", "2小时", "4小时", "6小时", "12小时", "24小时")
+    private val intervalOptions by lazy {
+        arrayOf(
+            getString(R.string.interval_15_min),
+            getString(R.string.interval_30_min),
+            getString(R.string.interval_1_hour),
+            getString(R.string.interval_2_hours),
+            getString(R.string.interval_4_hours),
+            getString(R.string.interval_6_hours),
+            getString(R.string.interval_12_hours),
+            getString(R.string.interval_24_hours)
+        )
+    }
     private val intervalValues = arrayOf(15, 30, 60, 120, 240, 360, 720, 1440)
     
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -137,6 +149,14 @@ class SettingsActivity : androidx.appcompat.app.AppCompatActivity() {
         btnPluginManager = findViewById(R.id.btnPluginManager)
         btnAboutAuthor = findViewById(R.id.btnAboutAuthor)
         btnRestartLauncher = findViewById(R.id.btnRestartLauncher)
+        
+        val tvVersion = findViewById<TextView>(R.id.tvVersion)
+        try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            tvVersion.text = "ADesk v${packageInfo.versionName}"
+        } catch (e: Exception) {
+            tvVersion.text = "ADesk v1.0 Demo"
+        }
         
         val columnAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, columnOptions)
         columnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

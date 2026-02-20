@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import com.thanksplay.adesk.model.AppInfo
+import com.thanksplay.adesk.util.ADeskLog
 import com.thanksplay.adesk.util.AppCacheManager
 import com.thanksplay.adesk.util.PreferencesManager
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +35,7 @@ class ADeskApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
+        ADeskLog.init(BuildConfig.DEBUG)
         appCacheManager = AppCacheManager(this)
         preloadData()
     }

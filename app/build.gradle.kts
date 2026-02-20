@@ -5,18 +5,20 @@ plugins {
 
 android {
     namespace = "com.thanksplay.adesk"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.thanksplay.adesk"
-        minSdk = 16
-        targetSdk = 36
+        minSdk = 21
+        targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0 Demo"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {

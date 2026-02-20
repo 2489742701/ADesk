@@ -22,6 +22,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -59,8 +60,6 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         
         private const val INDICATOR_SHOW_DURATION = 2000L
         private const val INDICATOR_FADE_DURATION = 500L
-        
-        private const val CALENDAR_PERMISSION_REQUEST_CODE = 1001
     }
     
     private lateinit var viewPager: ViewPager2
@@ -97,6 +96,37 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
     private var clockJob: Job? = null
     private var needsReload = true
     private var isReceiverRegistered = false
+    
+    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        val locationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        val calendarGranted = permissions[Manifest.permission.READ_CALENDAR] == true
+        
+        if (calendarGranted) {
+            loadCalendarEvents()
+        }
+        
+        if (locationGranted && prefsManager.showWeather) {
+            val widgetContainer = findViewById<android.widget.FrameLayout>(R.id.widgetContainer)
+            if (widgetContainer.visibility == View.VISIBLE) {
+                loadWeather(widgetContainer, false)
+            }
+        }
+    }
+    
+    private val calendarPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            loadCalendarEvents()
+        }
+    }
+    
+    private val locationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted && prefsManager.showWeather) {
+            val widgetContainer = findViewById<android.widget.FrameLayout>(R.id.widgetContainer)
+            if (widgetContainer.visibility == View.VISIBLE) {
+                loadWeather(widgetContainer, true)
+            }
+        }
+    }
     
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -139,7 +169,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         }
         
         if (permissionsToRequest.isNotEmpty()) {
-            requestPermissions(permissionsToRequest.toTypedArray(), 1000)
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
     
@@ -314,6 +344,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
     }
     
     private var lastWeatherClickTime: Long = 0L
+    private var weatherJob: Job? = null
     
     private fun loadWeather(container: android.widget.FrameLayout, forceRefresh: Boolean) {
         val tvTemp = container.findViewById<TextView>(R.id.tvWeatherTemp)
@@ -321,7 +352,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         val tvLocation = container.findViewById<TextView>(R.id.tvWeatherLocation)
         
         if (!forceRefresh && prefsManager.isWeatherCacheValid()) {
-            val cachedData = com.thanksplay.adesk.util.WeatherService.parseCachedWeather(prefsManager.weatherCacheData)
+            val cachedData = com.thanksplay.adesk.util.WeatherService.parseCachedWeather(this, prefsManager.weatherCacheData)
             if (cachedData != null) {
                 tvTemp.text = "${cachedData.temperature.toInt()}°"
                 tvDesc.text = cachedData.description
@@ -336,43 +367,37 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
             tvLocation.text = "--"
         }
         
-        val city = prefsManager.weatherCity
-        if (city.isNotEmpty()) {
-            com.thanksplay.adesk.util.WeatherService.fetchWeatherByCity(this, city, { data ->
-                if (data != null) {
-                    tvTemp.text = "${data.temperature.toInt()}°"
-                    tvDesc.text = data.description
-                    tvLocation.text = data.location
-                } else {
-                    tvTemp.text = "--°"
-                    tvDesc.text = getString(R.string.weather_load_failed)
-                    tvLocation.text = city
-                }
-            }, forceRefresh)
-        } else {
-            if (checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                com.thanksplay.adesk.util.WeatherService.getCurrentLocation(this) { lat, lon ->
+        weatherJob?.cancel()
+        weatherJob = lifecycleScope.launch {
+            val city = prefsManager.weatherCity
+            val data = if (city.isNotEmpty()) {
+                com.thanksplay.adesk.util.WeatherService.fetchWeatherByCity(this@MainActivity, city, forceRefresh)
+            } else {
+                if (checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    val (lat, lon) = com.thanksplay.adesk.util.WeatherService.getCurrentLocation(this@MainActivity)
                     if (lat != null && lon != null) {
-                        com.thanksplay.adesk.util.WeatherService.fetchWeather(this, lat, lon, { data ->
-                            if (data != null) {
-                                tvTemp.text = "${data.temperature.toInt()}°"
-                                tvDesc.text = data.description
-                                tvLocation.text = data.location
-                            } else {
-                                tvTemp.text = "--°"
-                                tvDesc.text = getString(R.string.weather_load_failed)
-                                tvLocation.text = "--"
-                            }
-                        }, forceRefresh)
+                        com.thanksplay.adesk.util.WeatherService.fetchWeather(this@MainActivity, lat, lon, forceRefresh)
                     } else {
                         tvDesc.text = getString(R.string.weather_location_failed)
+                        null
                     }
+                } else {
+                    tvTemp.text = "--°"
+                    tvDesc.text = getString(R.string.weather_location_failed)
+                    tvLocation.text = "--"
+                    locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                    return@launch
                 }
+            }
+            
+            if (data != null) {
+                tvTemp.text = "${data.temperature.toInt()}°"
+                tvDesc.text = data.description
+                tvLocation.text = data.location
             } else {
                 tvTemp.text = "--°"
-                tvDesc.text = getString(R.string.weather_location_failed)
-                tvLocation.text = "--"
-                requestPermissions(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION), 1002)
+                tvDesc.text = getString(R.string.weather_load_failed)
+                tvLocation.text = if (city.isNotEmpty()) city else "--"
             }
         }
     }
@@ -560,38 +585,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
     }
     
     private fun requestCalendarPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(
-                arrayOf(Manifest.permission.READ_CALENDAR),
-                CALENDAR_PERMISSION_REQUEST_CODE
-            )
-        }
-    }
-    
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            CALENDAR_PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadCalendarEvents()
-                }
-            }
-            1000, 1002 -> {
-                if (grantResults.isNotEmpty() && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-                    if (prefsManager.showWeather) {
-                        val widgetContainer = findViewById<android.widget.FrameLayout>(R.id.widgetContainer)
-                        if (widgetContainer.visibility == View.VISIBLE) {
-                            loadWeather(widgetContainer, false)
-                        }
-                    }
-                    loadCalendarEvents()
-                }
-            }
-        }
+        calendarPermissionLauncher.launch(Manifest.permission.READ_CALENDAR)
     }
     
     private fun loadHomeApps() {
@@ -603,12 +597,12 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
             val homeApps = orderList.mapNotNull { packageName ->
                 packageToAppMap[packageName]
             }.take(maxApps)
-            homeAppsAdapter.setItems(homeApps)
+            homeAppsAdapter.submitList(homeApps)
         } else {
             val defaultApps = getVisibleApps()
                 .sortedBy { it.label.lowercase() }
                 .take(maxApps)
-            homeAppsAdapter.setItems(defaultApps)
+            homeAppsAdapter.submitList(defaultApps)
         }
         
         applyHomeAppsOffset()

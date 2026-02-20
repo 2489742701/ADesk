@@ -15,10 +15,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager"
+    <com.thanksplay.adesk.widget.DirectionalViewPagerContainer
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </com.thanksplay.adesk.widget.DirectionalViewPagerContainer>
 
     <LinearLayout
         android:id="@+id/pageIndicator"

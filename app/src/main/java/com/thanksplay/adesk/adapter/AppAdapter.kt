@@ -7,7 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.thanksplay.adesk.R
 import com.thanksplay.adesk.model.AppInfo
@@ -16,7 +17,7 @@ import com.thanksplay.adesk.util.PreferencesManager
 class AppAdapter(
     private val context: Context,
     private val prefsManager: PreferencesManager
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : ListAdapter<ListItem, RecyclerView.ViewHolder>(AppDiffCallback()) {
     
     companion object {
         private const val VIEW_TYPE_HORIZONTAL = 0
@@ -24,21 +25,17 @@ class AppAdapter(
         private const val VIEW_TYPE_HEADER = 2
     }
     
-    private var items: MutableList<ListItem> = mutableListOf()
     private var labelPosition: Int = PreferencesManager.LABEL_POSITION_RIGHT
     private var onSettingsClickListener: (() -> Unit)? = null
     private var columns: Int = 2
     
     fun setApps(apps: List<AppInfo>) {
-        items.clear()
-        apps.forEach { app ->
-            items.add(ListItem.AppItem(app))
-        }
-        notifyDataSetChanged()
+        val items = apps.map { ListItem.AppItem(it) }
+        submitList(items)
     }
     
     fun setItemsWithSeparator(favoriteApps: List<AppInfo>, otherApps: List<AppInfo>, separatorTitle: String) {
-        items.clear()
+        val items = mutableListOf<ListItem>()
         
         favoriteApps.forEach { app ->
             items.add(ListItem.AppItem(app))
@@ -51,7 +48,7 @@ class AppAdapter(
             }
         }
         
-        notifyDataSetChanged()
+        submitList(items)
     }
     
     fun setLabelPosition(position: Int) {
@@ -68,7 +65,7 @@ class AppAdapter(
     }
     
     override fun getItemViewType(position: Int): Int {
-        return when (items[position]) {
+        return when (getItem(position)) {
             is ListItem.Header -> VIEW_TYPE_HEADER
             is ListItem.AppItem -> if (labelPosition == PreferencesManager.LABEL_POSITION_RIGHT) {
                 VIEW_TYPE_HORIZONTAL
@@ -99,7 +96,7 @@ class AppAdapter(
     }
     
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = items[position]) {
+        when (val item = getItem(position)) {
             is ListItem.Header -> {
                 (holder as HeaderViewHolder).headerText.text = item.title
             }
@@ -126,10 +123,8 @@ class AppAdapter(
         }
     }
     
-    override fun getItemCount(): Int = items.size
-    
     fun getSpanSize(position: Int): Int {
-        return when (items[position]) {
+        return when (getItem(position)) {
             is ListItem.Header -> columns
             is ListItem.AppItem -> 1
         }
@@ -147,11 +142,6 @@ class AppAdapter(
         }
     }
     
-    private sealed class ListItem {
-        data class Header(val title: String) : ListItem()
-        data class AppItem(val app: AppInfo) : ListItem()
-    }
-    
     inner class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val headerText: TextView = itemView.findViewById(R.id.headerText)
     }
@@ -163,5 +153,24 @@ class AppAdapter(
     
     interface OnAppActionListener {
         fun onAppLongClick(app: AppInfo)
+    }
+}
+
+sealed class ListItem {
+    data class Header(val title: String) : ListItem()
+    data class AppItem(val app: AppInfo) : ListItem()
+}
+
+class AppDiffCallback : DiffUtil.ItemCallback<ListItem>() {
+    override fun areItemsTheSame(oldItem: ListItem, newItem: ListItem): Boolean {
+        return when {
+            oldItem is ListItem.Header && newItem is ListItem.Header -> oldItem.title == newItem.title
+            oldItem is ListItem.AppItem && newItem is ListItem.AppItem -> oldItem.app.packageName == newItem.app.packageName
+            else -> false
+        }
+    }
+    
+    override fun areContentsTheSame(oldItem: ListItem, newItem: ListItem): Boolean {
+        return oldItem == newItem
     }
 }

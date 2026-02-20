@@ -120,4 +120,29 @@
     <string name="about_author">关于作者</string>
     <string name="restart_launcher">重启桌面</string>
     <string name="author_name">thanksplay</string>
+    
+    <string name="weather_clear">晴</string>
+    <string name="weather_cloudy">多云</string>
+    <string name="weather_fog">雾</string>
+    <string name="weather_drizzle">毛毛雨</string>
+    <string name="weather_freezing_rain">冻雨</string>
+    <string name="weather_rain">雨</string>
+    <string name="weather_snow">雪</string>
+    <string name="weather_snow_grains">雪粒</string>
+    <string name="weather_showers">阵雨</string>
+    <string name="weather_snow_showers">阵雪</string>
+    <string name="weather_thunderstorm">雷暴</string>
+    <string name="weather_thunderstorm_hail">雷暴冰雹</string>
+    <string name="weather_unknown">未知</string>
+    
+    <string name="interval_15_min">15分钟</string>
+    <string name="interval_30_min">30分钟</string>
+    <string name="interval_1_hour">1小时</string>
+    <string name="interval_2_hours">2小时</string>
+    <string name="interval_4_hours">4小时</string>
+    <string name="interval_6_hours">6小时</string>
+    <string name="interval_12_hours">12小时</string>
+    <string name="interval_24_hours">24小时</string>
+    
+    <string name="home_apps_full">主页应用已满</string>
 </resources>
