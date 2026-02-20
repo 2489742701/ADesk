@@ -313,7 +313,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         }
     }
     
-    private lateinit var lastWeatherClickTime: Long
+    private var lastWeatherClickTime: Long = 0L
     
     private fun loadWeather(container: android.widget.FrameLayout, forceRefresh: Boolean) {
         val tvTemp = container.findViewById<TextView>(R.id.tvWeatherTemp)
@@ -573,7 +573,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
                     if (prefsManager.showWeather) {
                         val widgetContainer = findViewById<android.widget.FrameLayout>(R.id.widgetContainer)
                         if (widgetContainer.visibility == View.VISIBLE) {
-                            loadWeather(widgetContainer)
+                            loadWeather(widgetContainer, false)
                         }
                     }
                     loadCalendarEvents()
