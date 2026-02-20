@@ -116,11 +116,31 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
             showLanguageSelectionDialog()
         }
         
+        requestRequiredPermissions()
+        
         registerPackageReceiver()
         
         initViews()
         applyWallpaper()
         loadAppsAsync()
+    }
+    
+    private fun requestRequiredPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+        
+        if (prefsManager.showWeather) {
+            if (checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+            }
+        }
+        
+        if (checkSelfPermission(android.Manifest.permission.READ_CALENDAR) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(android.Manifest.permission.READ_CALENDAR)
+        }
+        
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissions(permissionsToRequest.toTypedArray(), 1000)
+        }
     }
     
     private fun showLanguageSelectionDialog() {
@@ -327,6 +347,9 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
                     }
                 }
             } else {
+                tvTemp.text = "--°"
+                tvDesc.text = getString(R.string.weather_location_failed)
+                tvLocation.text = "--"
                 requestPermissions(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION), 1002)
             }
         }
@@ -529,9 +552,22 @@ class MainActivity : AppCompatActivity(), AppAdapter.OnAppActionListener {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CALENDAR_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadCalendarEvents()
+        when (requestCode) {
+            CALENDAR_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loadCalendarEvents()
+                }
+            }
+            1000, 1002 -> {
+                if (grantResults.isNotEmpty() && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+                    if (prefsManager.showWeather) {
+                        val widgetContainer = findViewById<android.widget.FrameLayout>(R.id.widgetContainer)
+                        if (widgetContainer.visibility == View.VISIBLE) {
+                            loadWeather(widgetContainer)
+                        }
+                    }
+                    loadCalendarEvents()
+                }
             }
         }
     }
